@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>اتحاد طلاب تحيا مصر | الانضمام</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <meta name="theme-color" content="#b3202a" />
+    <link rel="stylesheet" href="assets/css/main.css" />
+    <link rel="stylesheet" href="assets/css/responsive.css" />
+  </head>
+  <body>
+    <div id="loader">
+      <img id="lg0" alt="" />
+      <p>جاري التحميل...</p>
+    </div>
+    <header>
+      <img class="logo" alt="شعار اتحاد طلاب تحيا مصر" />
+      <h1>اتحاد طلاب تحيا مصر</h1>
+      <p>استمارة الانضمام للأعضاء الجدد</p>
+      <nav class="nav" aria-label="التنقل الرئيسي">
+        <a class="nav-btn active" href="index.html"
+          ><svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="5" y="3" width="14" height="18" rx="2" />
+            <path d="M9 8h6M9 12h6M9 16h4" /></svg
+          >استمارة الانضمام</a
+        >
+        <a class="nav-btn" href="result.html"
+          ><svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <path d="M21 21l-4.3-4.3" /></svg
+          >نتيجة المقابلة</a
+        >
+      </nav>
+    </header>
+    <main>
+      <div id="formView">
+        <form id="f" novalidate>
+          <div class="card">
+            <h2>البيانات الشخصية</h2>
+            <div class="grid">
+              <div class="full">
+                <label>الاسم بالعربية (كما في البطاقة)</label><input id="name_ar" required />
+                <div class="err"></div>
+              </div>
+              <div>
+                <label>الرقم القومي</label
+                ><input id="national_id" class="ltr" inputmode="numeric" maxlength="14" required />
+                <div class="err"></div>
+              </div>
+              <div>
+                <label>الجنس</label>
+                <div class="seg">
+                  <label><input type="radio" name="gender" value="ذكر" required /><span>ذكر</span></label
+                  ><label><input type="radio" name="gender" value="أنثى" /><span>أنثى</span></label>
+                </div>
+                <div class="err"></div>
+              </div>
+              <div class="full">
+                <label>العنوان (كما في البطاقة)</label><input id="address" required />
+                <div class="err"></div>
+              </div>
+              <div>
+                <label>تاريخ الميلاد</label><input id="birth_date" type="date" required />
+                <div class="err"></div>
+              </div>
+              <div><label>السن</label><input id="age" readonly /></div>
+              <div>
+                <label>البريد الإلكتروني</label><input id="email" type="email" class="ltr" required />
+                <div class="err"></div>
+              </div>
+              <div>
+                <label>رقم الهاتف</label
+                ><input id="phone" class="ltr" inputmode="numeric" maxlength="11" required />
+                <div class="err"></div>
+              </div>
+              <div>
+                <label>رقم الواتساب</label
+                ><input id="whatsapp" class="ltr" inputmode="numeric" maxlength="11" required />
+                <div class="err"></div>
+              </div>
+              <div>
+                <label>محافظة السكن</label
+                ><select id="residence_gov" required></select>
+                <div class="err"></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h2>التعليم</h2>
+            <div class="grid">
+              <div>
+                <label>المستوى التعليمي</label
+                ><select id="education" required>
+                  <option value="">اختر</option>
+                  <option>ثانوي</option>
+                  <option>جامعي</option>
+                  <option>فوق جامعي</option>
+                </select>
+                <div class="err"></div>
+              </div>
+              <div id="schoolBox">
+                <label>المدرسة</label><input id="school" />
+                <div class="err"></div>
+              </div>
+              <div id="uniBox">
+                <label>الجامعة</label><input id="university" />
+                <div class="err"></div>
+              </div>
+              <div id="facBox">
+                <label>الكلية</label><input id="faculty" />
+                <div class="err"></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h2>الانضمام للاتحاد</h2>
+            <div class="grid">
+              <div>
+                <label>المحافظة المراد الانضمام إليها</label
+                ><select id="target_gov" required></select>
+                <div class="err"></div>
+              </div>
+              <div>
+                <label>اللجنة المراد الانضمام إليها</label
+                ><select id="committee" required></select>
+                <div class="err"></div>
+              </div>
+              <div class="full" id="cinfo"></div>
+              <div class="full">
+                <label>صورة شخصية (صورة واضحة لك)</label
+                ><input id="photo" type="file" accept="image/*" required />
+                <div class="err"></div>
+              </div>
+            </div>
+          </div>
+          <button class="btn full" id="sub">إرسال طلب الانضمام</button>
+        </form>
+      </div>
+      <div id="thanks" class="card thanks" hidden>
+        <div class="ok">✔</div>
+        <h2 id="thName" class="plain-title"></h2>
+        <p>
+          استلمنا طلب انضمامك بنجاح. سيتواصل معك فريق الموارد البشرية لتحديد موعد المقابلة الشخصية.<br />يمكنك
+          معرفة النتيجة لاحقاً من صفحة <a href="result.html" class="text-link">نتيجة المقابلة</a>.
+        </p>
+        <p class="brand-note">اتحاد طلاب تحيا مصر</p>
+      </div>
+    </main>
+    <footer class="site-footer">
+      <span>© اتحاد طلاب تحيا مصر</span
+      ><button class="staff-icon" id="staffLink" type="button" aria-label="دخول الفريق" title="دخول الفريق">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="4" y="11" width="16" height="10" rx="2" />
+          <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+        </svg>
+      </button>
+    </footer>
+
+    <div id="admin">
+      <div class="admin-wrap">
+        <div id="login" class="card login-card">
+          <h2>دخول الفريق</h2>
+          <label>البريد الإلكتروني</label><input id="lemail" class="ltr" type="email" /><label class="mt-8"
+            >كلمة المرور</label
+          ><input id="lpass" class="ltr" type="password" />
+          <div class="err" id="lerr"></div>
+          <button class="btn full" id="lbtn" type="button">
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="4" y="11" width="16" height="10" rx="2" />
+              <path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg
+            >تسجيل الدخول
+          </button>
+          <button class="btn-ghost full" id="back" type="button">
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 12h14" />
+              <path d="m12 5 7 7-7 7" /></svg
+            >رجوع للاستمارة
+          </button>
+        </div>
+        <div id="dash" hidden>
+          <div class="bar">
+            <h2 id="who" class="grow-title"></h2>
+            <button class="btn-ghost sm" id="exitDash" type="button">
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" /></svg
+              >الاستمارة
+            </button>
+            <button class="btn sm" id="logout" type="button">
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <path d="m16 17 5-5-5-5" />
+                <path d="M21 12H9" /></svg
+              >تسجيل الخروج
+            </button>
+          </div>
+          <div class="tabs">
+            <button class="on" data-t="listView">الطلبات</button
+            ><button data-t="statsView">لوحة الإحصائيات</button>
+          </div>
+          <div id="listView">
+            <div class="bar">
+              <input id="fq" placeholder="بحث بالاسم / الرقم القومي" /><select id="fg"></select
+              ><select id="fc"></select>
+              <select id="fs">
+                <option value="">كل الحالات</option>
+                <option value="p">قيد المراجعة</option>
+                <option value="a">مقبول</option>
+                <option value="r">مرفوض</option>
+              </select>
+              <span id="cnt" class="muted"></span>
+            </div>
+            <div class="bar" id="adminBar">
+              <select id="asg"></select
+              ><button class="btn sm gld" id="asgBtn">توزيع المحددين</button>
+              <button class="btn sm alt" id="exp">تصدير Excel</button
+              ><label class="btn sm alt btn-file"
+                >استيراد Excel<input id="imp" type="file" accept=".xlsx,.xls,.csv" hidden
+              /></label>
+            </div>
+            <div class="tw">
+              <table>
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="all" /></th>
+                    <th>الاسم</th>
+                    <th>الرقم القومي</th>
+                    <th>المحافظة</th>
+                    <th>اللجنة</th>
+                    <th>الهاتف</th>
+                    <th>HR المسؤول</th>
+                    <th>الحالة</th>
+                  </tr>
+                </thead>
+                <tbody id="tb"></tbody>
+              </table>
+            </div>
+          </div>
+          <div id="statsView" hidden></div>
+        </div>
+      </div>
+    </div>
+    <div id="modal"><div class="box" id="mbox"></div></div>
+
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/client.js"></script>
+    <script src="assets/js/utils.js"></script>
+    <script src="assets/js/data.js"></script>
+    <script src="assets/js/loader.js"></script>
+    <script src="assets/js/form.js"></script>
+    <script src="assets/js/admin.js"></script>
+    <script src="assets/js/stats.js"></script>
+    <script src="assets/js/profile.js"></script>
+  </body>
+</html>
