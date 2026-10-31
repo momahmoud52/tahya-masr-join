@@ -59,17 +59,26 @@ async function init() {
 }
 async function load() {
   loader(true, "جاري تحميل البيانات...");
-  const r = await sb
-    .from("applications")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .range(0, 4999);
-  loader(false);
-  if (r.error) {
-    alert(r.error.message);
-    return;
+  const PAGE = 1000; // الحد الأقصى الذي يرجعه Supabase في الطلب الواحد
+  const all = [];
+  for (let from = 0; ; from += PAGE) {
+    const r = await sb
+      .from("applications")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .order("id")
+      .range(from, from + PAGE - 1);
+    if (r.error) {
+      loader(false);
+      alert(r.error.message);
+      return;
+    }
+    all.push(...r.data);
+    loader(true, `جاري تحميل البيانات... (${all.length})`);
+    if (r.data.length < PAGE) break;
   }
-  rows = r.data;
+  loader(false);
+  rows = all;
   draw();
 }
 const stOf = (r) => (r.decision === "accepted" ? "a" : r.decision === "rejected" ? "r" : "p");
@@ -112,16 +121,20 @@ $("#tb").onclick = (e) => {
 $("#asgBtn").onclick = async () => {
   const to = $("#asg").value;
   if (!to || !sel.size) return alert("اختر عضو HR وحدد المتقدمين أولاً");
-  const { error } = await sb
-    .from("applications")
-    .update({ assigned_to: to })
-    .in("id", [...sel]);
-  if (error) return alert(error.message);
+  for (const part of chunk([...sel], 100)) {
+    const { error } = await sb.from("applications").update({ assigned_to: to }).in("id", part);
+    if (error) return alert(error.message);
+  }
   sel.clear();
   await load();
   alert("تم التوزيع");
 };
-$("#exp").onclick = () => {
+$("#exp").onclick = async () => {
+  try {
+    await loadLib("xlsx");
+  } catch (e) {
+    return alert(e.message);
+  }
   const data = view().map((r) => {
     const o = {};
     for (const k in COLS) o[COLS[k]] = r[k];
@@ -137,6 +150,11 @@ $("#exp").onclick = () => {
 $("#imp").onchange = async (e) => {
   const f = e.target.files[0];
   if (!f) return;
+  try {
+    await loadLib("xlsx");
+  } catch (err) {
+    return alert(err.message);
+  }
   const wb = XLSX.read(await f.arrayBuffer());
   const inv = Object.fromEntries(Object.entries(COLS).map(([k, v]) => [v, k]));
   const out = XLSX.utils
@@ -202,10 +220,20 @@ async function deleteApplications(ids) {
     .filter((r) => ids.includes(r.id))
     .map((r) => (r.photo_url || "").split("/photos/")[1])
     .filter(Boolean);
-  const { data, error } = await sb.from("applications").delete().in("id", ids).select("id");
+  let data = [],
+    error = null;
+  for (const part of chunk(ids, 100)) {
+    const res = await sb.from("applications").delete().in("id", part).select("id");
+    if (res.error) {
+      error = res.error;
+      break;
+    }
+    data = data.concat(res.data);
+  }
   loader(false);
   if (error) {
     alert(error.message);
+    if (data.length) await load();
     return false;
   }
   if (!data.length) {

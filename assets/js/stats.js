@@ -89,7 +89,12 @@ ${G.map((x, i) => `<div class="rk"><span>${i + 1}</span><b>${x.g}</b><div class=
   $("#stExp").onclick = exportStats;
   $("#stPdf").onclick = exportStatsPdf;
 }
-function exportStats() {
+async function exportStats() {
+  try {
+    await loadLib("xlsx");
+  } catch (e) {
+    return alert(e.message);
+  }
   const R = rows.filter((r) => !stC || r.committee === stC),
     t = R.length;
   const wb = XLSX.utils.book_new();
