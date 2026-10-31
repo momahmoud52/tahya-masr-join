@@ -1,3 +1,8 @@
+/* أي عنصر عليه hidden يُخفى فعلاً مهما كان تنسيقه */
+[hidden] {
+  display: none !important;
+}
+
 :root {
   --ink: #2b1d1d;
   --red: #b3202a;
