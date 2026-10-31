@@ -38,13 +38,16 @@ ${CRIT.map(
 <label style="margin-top:10px">القرار النهائي</label>
 <div class="dec"><label class="a"><input type="radio" name="dc" value="accepted" ${r.decision === "accepted" ? "checked" : ""}>✔ قبول</label><label class="r"><input type="radio" name="dc" value="rejected" ${r.decision === "rejected" ? "checked" : ""}>✖ رفض</label></div>
 <label>سبب القرار (إجباري)</label><textarea id="reason" rows="2">${esc(r.decision_reason)}</textarea>
-<div class="err" id="merr"></div><button class="btn full" id="msave">حفظ التقييم والقرار</button>`;
+<div class="err" id="merr"></div><button class="btn full" id="msave">حفظ التقييم والقرار</button>${me.role === "admin" ? '<button class="btn-ghost btn-danger full" id="mdel" type="button">حذف الطلب نهائياً</button>' : ""}`;
   $("#modal").style.display = "flex";
   const tot = () =>
     ($("#tot").textContent = [...document.querySelectorAll(".sc")].reduce((a, s) => a + +s.value, 0));
   tot();
   document.querySelectorAll(".sc").forEach((s) => (s.onchange = tot));
   $("#mx").onclick = () => ($("#modal").style.display = "none");
+  $("#mdel")?.addEventListener("click", async () => {
+    if (await deleteApplications([id])) $("#modal").style.display = "none";
+  });
   $("#msave").onclick = async () => {
     const scores = {};
     let miss = false;

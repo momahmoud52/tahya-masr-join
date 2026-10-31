@@ -67,13 +67,13 @@ function stats() {
     [n - acc - rej, "قيد المراجعة"],
   ];
   $("#statsView").innerHTML =
-    `<div class="bar"><select id="stCom">${opts(Object.keys(COMM), "كل اللجان").replace(`<option>${stC}</option>`, `<option selected>${stC}</option>`)}</select><button class="btn sm alt" id="stExp">تصدير الإحصائيات Excel</button></div>
+    `<div class="bar"><select id="stCom">${opts(Object.keys(COMM), "كل اللجان").replace(`<option>${stC}</option>`, `<option selected>${stC}</option>`)}</select><button class="btn sm alt" id="stExp">تصدير الإحصائيات Excel</button><button class="btn sm" id="stPdf">تصدير PDF</button></div>
 <div class="kpis">${K.map((k) => `<div class="kpi"><b>${k[0]}</b><span>${k[1]}</span></div>`).join("")}</div>
 <div class="hl"><div><span>أعلى محافظة انضماماً</span><br><b>${top ? top.g : "—"}</b> ${top ? `— ${top.n} متقدم (${pc(top.n, n)}%)` : ""}</div>
 <div class="lo"><span>أقل محافظة انضماماً (من لديها متقدمون)</span><br><b>${low ? low.g : "—"}</b> ${low ? `— ${low.n} متقدم (${pc(low.n, n)}%)` : ""}</div>
 <div class="lo"><span>محافظات بلا متقدمين (${zero.length})</span><br>${zero.length ? zero.join("، ") : "كل المحافظات بها متقدمون"}</div></div>
 <div class="two"><div class="card"><h2>نسبة وتناسب الجنس</h2>
-<div class="donut" style="background:${n ? `conic-gradient(var(--gold) 0 ${pc(m, n)}%,var(--red) 0)` : "#f7f0df"}"><div>${n}<br>متقدم</div></div>
+<div class="donut-wrap"><svg class="donut-svg" width="170" height="170" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="نسبة الذكور والإناث"><circle cx="50" cy="50" r="38" fill="none" stroke="${n ? "#b3202a" : "#f7f0df"}" stroke-width="18"/>${n ? `<circle cx="50" cy="50" r="38" fill="none" stroke="#c9962e" stroke-width="18" stroke-dasharray="${(m / n) * 238.76} 238.76" transform="rotate(-90 50 50)"/>` : ""}<text x="50" y="49" text-anchor="middle" font-size="15" font-weight="800" fill="#2b1d1d" font-family="Cairo,sans-serif">${n}</text><text x="50" y="63" text-anchor="middle" font-size="8" fill="#6b5c5c" font-family="Cairo,sans-serif">متقدم</text></svg></div>
 <div class="lg"><span><i style="background:var(--gold)"></i>ذكور ${pc(m, n)}%</span><span><i style="background:var(--red)"></i>إناث ${pc(f, n)}%</span></div>
 <p style="text-align:center;color:var(--mut);margin:8px 0 0">التناسب ذكور : إناث = ${m} : ${f}</p></div>
 <div class="card"><h2>الأعمار</h2>${bars(grp)}
@@ -87,6 +87,7 @@ ${G.map((x, i) => `<div class="rk"><span>${i + 1}</span><b>${x.g}</b><div class=
     stats();
   };
   $("#stExp").onclick = exportStats;
+  $("#stPdf").onclick = exportStatsPdf;
 }
 function exportStats() {
   const R = rows.filter((r) => !stC || r.committee === stC),

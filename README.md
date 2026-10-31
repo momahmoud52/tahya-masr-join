@@ -15,6 +15,7 @@ assets/js/
   result.js           الاستعلام عن النتيجة (يُحمّل في result.html فقط)
   admin.js            لوحة الأدمن/HR
   stats.js            لوحة الإحصائيات
+  pdf.js              تصدير الإحصائيات إلى PDF
   profile.js          البروفايل وتقييم HR
 database/schema.sql   قاعدة البيانات والصلاحيات
 ```

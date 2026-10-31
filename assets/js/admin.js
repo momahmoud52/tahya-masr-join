@@ -44,7 +44,7 @@ async function init() {
   $("#login").hidden = true;
   $("#dash").hidden = false;
   $("#who").textContent = `${me.name} (${me.role === "admin" ? "أدمن" : "HR"})`;
-  $("#adminBar").hidden = me.role !== "admin";
+  $("#adminBar").hidden = $("#formBar").hidden = me.role !== "admin";
   $("#fg").innerHTML = opts(GOVS, "كل المحافظات");
   $("#fc").innerHTML = opts(Object.keys(COMM), "كل اللجان");
   $("#asg").innerHTML = opts(
@@ -55,6 +55,7 @@ async function init() {
     (m, n) => `<option value="${staff.find((x) => x.name === n)?.id}">${n}</option>`,
   );
   await load();
+  await loadFormStatus();
 }
 async function load() {
   loader(true, "جاري تحميل البيانات...");
@@ -167,4 +168,68 @@ $("#imp").onchange = async (e) => {
   e.target.value = "";
   await load();
   alert(`تم استيراد ${out.length} صف (المكرر تم تجاهله)`);
+};
+
+/* فتح وغلق الاستمارة */
+let formOpen = true;
+const renderFormToggle = () => {
+  const t = $("#formToggle");
+  t.classList.toggle("on", formOpen);
+  t.setAttribute("aria-checked", formOpen);
+  $("#formLbl").textContent = formOpen ? "الاستمارة مفتوحة للتسجيل" : "الاستمارة مغلقة";
+};
+async function loadFormStatus() {
+  if (me?.role !== "admin") return;
+  const { data } = await sb.rpc("form_is_open");
+  formOpen = data !== false;
+  renderFormToggle();
+}
+$("#formToggle").onclick = async () => {
+  const next = !formOpen;
+  if (!next && !confirm("هل تريد إغلاق الاستمارة؟ لن يتمكن أي شخص من التسجيل حتى تعيد فتحها.")) return;
+  const { error } = await sb.from("settings").upsert({ key: "form_open", value: next });
+  if (error) return alert("تعذر تغيير الحالة: " + error.message);
+  formOpen = next;
+  renderFormToggle();
+};
+
+/* حذف الطلبات مع صورها */
+async function deleteApplications(ids) {
+  if (!ids.length) return alert("حدد الطلبات التي تريد حذفها أولاً");
+  if (!confirm(`سيتم حذف ${ids.length} طلب نهائياً مع صورهم، ولا يمكن التراجع. هل أنت متأكد؟`)) return false;
+  loader(true, "جاري الحذف...");
+  const photos = rows
+    .filter((r) => ids.includes(r.id))
+    .map((r) => (r.photo_url || "").split("/photos/")[1])
+    .filter(Boolean);
+  const { data, error } = await sb.from("applications").delete().in("id", ids).select("id");
+  loader(false);
+  if (error) {
+    alert(error.message);
+    return false;
+  }
+  if (!data.length) {
+    alert("لم يُحذف شيء، تأكد أن حسابك أدمن");
+    return false;
+  }
+  if (photos.length) await sb.storage.from("photos").remove(photos);
+  const gone = new Set(data.map((x) => x.id));
+  rows = rows.filter((r) => !gone.has(r.id));
+  gone.forEach((id) => sel.delete(id));
+  draw();
+  return true;
+}
+$("#delBtn").onclick = () => deleteApplications([...sel]);
+
+/* تحديث البيانات مع الإبقاء على الفلاتر */
+$("#refreshBtn").onclick = async () => {
+  const b = $("#refreshBtn"),
+    keep = ["fq", "fg", "fc", "fs"].map((id) => [id, $("#" + id).value]);
+  b.classList.add("spin");
+  b.disabled = true;
+  await init();
+  keep.forEach(([id, v]) => ($("#" + id).value = v));
+  draw();
+  b.classList.remove("spin");
+  b.disabled = false;
 };

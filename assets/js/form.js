@@ -1,4 +1,14 @@
 /* استمارة الانضمام: التحقق والرفع والإرسال */
+const showClosed = () => {
+  $("#formView").hidden = true;
+  $("#closedView").hidden = false;
+};
+(async () => {
+  try {
+    const { data } = await sb.rpc("form_is_open");
+    if (data === false) showClosed();
+  } catch {}
+})();
 $("#residence_gov").innerHTML = opts(GOVS, "اختر المحافظة");
 $("#target_gov").innerHTML = opts(GOVS, "اختر المحافظة");
 $("#committee").onchange = (e) => {
@@ -27,6 +37,21 @@ document
   .querySelectorAll("input[name=gender]")
   .forEach((r) => r.addEventListener("change", renderCommittees));
 digits($("#national_id"), 14);
+const NID_DUP_MSG = "هذا الرقم القومي مسجل بالفعل. يمكنك معرفة نتيجتك من صفحة «نتيجة المقابلة».";
+const nidExists = async (nid) => {
+  try {
+    const { data } = await sb.rpc("check_result", { nid });
+    return !!data?.length;
+  } catch {
+    return false;
+  }
+};
+$("#national_id").addEventListener("input", async (e) => {
+  const el = e.target;
+  el.classList.remove("bad");
+  el.closest("div").querySelector(".err").textContent = "";
+  if (el.value.length === 14 && (await nidExists(el.value)) && el.value.length === 14) bad(el, NID_DUP_MSG);
+});
 digits($("#phone"), 11);
 digits($("#whatsapp"), 11);
 $("#name_ar").oninput = (e) =>
@@ -104,6 +129,12 @@ $("#f").onsubmit = async (ev) => {
   loader(true, "جاري إرسال طلبك...");
   $("#sub").disabled = true;
   try {
+    // فحص التكرار قبل رفع الصورة حتى لا تتراكم صور بلا طلبات
+    if (await nidExists(V("national_id"))) {
+      bad($("#national_id"), NID_DUP_MSG);
+      $("#national_id").scrollIntoView({ block: "center" });
+      return;
+    }
     const blob = await compressImage(file),
       path = crypto.randomUUID() + ".jpg";
     const up = await sb.storage.from("photos").upload(path, blob, { contentType: "image/jpeg" });
@@ -122,6 +153,10 @@ $("#f").onsubmit = async (ev) => {
     $("#thanks").hidden = false;
     scrollTo(0, 0);
   } catch (e) {
+    if (e.code === "42501" || /row-level security/i.test(e.message || "")) {
+      showClosed();
+      return;
+    }
     alert(
       e.code === "23505"
         ? "هذا الرقم القومي مسجل بالفعل. يمكنك الاستعلام عن نتيجتك أسفل الاستمارة."

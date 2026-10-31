@@ -785,3 +785,119 @@ input[type="file"]::file-selector-button {
   font-weight: 600;
   cursor: pointer;
 }
+
+.donut-svg {
+  width: 170px;
+  height: 170px;
+  display: block;
+  margin: 8px auto;
+}
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  border-radius: 99px;
+  padding: 6px 16px 6px 10px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+}
+.switch .track {
+  position: relative;
+  flex: none;
+  width: 42px;
+  height: 24px;
+  border-radius: 99px;
+  background: var(--red);
+  transition: background 0.2s;
+}
+.switch .track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  inset-inline-start: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: inset-inline-start 0.2s;
+}
+.switch.on .track {
+  background: var(--gold-d);
+}
+.switch.on .track::after {
+  inset-inline-start: 21px;
+}
+.btn.btn-danger {
+  background: #6d0d14;
+}
+.btn-ghost.btn-danger {
+  border-color: #6d0d14;
+  color: #6d0d14;
+}
+.btn-ghost.btn-danger:hover {
+  background: #6d0d14;
+  color: #fff;
+}
+.spin .ico {
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+.thanks .ok .ico {
+  width: 56px;
+  height: 56px;
+}
+.pdf-root {
+  position: absolute;
+  left: -10000px;
+  top: 0;
+  width: 1000px;
+  padding: 24px;
+  background: #fff;
+  direction: rtl;
+  font-family: Cairo, sans-serif;
+  color: #2b1d1d;
+}
+.pdf-root > * {
+  margin-bottom: 12px;
+}
+.pdf-head {
+  background: linear-gradient(135deg, #b3202a, #8e1620);
+  border-bottom: 6px solid #c9962e;
+  border-radius: 10px;
+  padding: 22px;
+  text-align: center;
+  color: #fff;
+}
+.pdf-head h1 {
+  margin: 0;
+  font-size: 28px;
+}
+.pdf-head p {
+  margin: 6px 0 0;
+  color: #ffe3a3;
+}
+
+.donut-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0;
+}
+.donut-svg {
+  margin: 0;
+}
+.pdf-root .kpis {
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.btn,
+.btn-ghost {
+  white-space: nowrap;
+}
