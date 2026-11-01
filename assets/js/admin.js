@@ -25,6 +25,7 @@ $("#lbtn").onclick = async () => {
   else init();
 };
 $("#logout").onclick = async () => {
+  stopRealtime();
   await sb.auth.signOut();
   $("#dash").hidden = true;
   $("#login").hidden = false;
@@ -55,9 +56,11 @@ async function init() {
   );
   await load();
   await loadFormStatus();
+  startRealtime();
 }
-async function load() {
-  loader(true, "جاري تحميل البيانات...");
+async function load(silent = false) {
+  const L = (...a) => silent || loader(...a);
+  L(true, "جاري تحميل البيانات...");
   const PAGE = 1000; // الحد الأقصى الذي يرجعه Supabase في الطلب الواحد
   const all = [];
   for (let from = 0; ; from += PAGE) {
@@ -68,16 +71,18 @@ async function load() {
       .order("id")
       .range(from, from + PAGE - 1);
     if (r.error) {
-      loader(false);
-      alert(r.error.message);
+      L(false);
+      if (!silent) alert(r.error.message);
       return;
     }
     all.push(...r.data);
-    loader(true, `جاري تحميل البيانات... (${all.length})`);
+    L(true, `جاري تحميل البيانات... (${all.length})`);
     if (r.data.length < PAGE) break;
   }
-  loader(false);
+  L(false);
   rows = all;
+  const ids = new Set(all.map((r) => r.id));
+  [...sel].forEach((id) => ids.has(id) || sel.delete(id));
   draw();
 }
 const stOf = (r) => (r.decision === "accepted" ? "a" : r.decision === "rejected" ? "r" : "p");

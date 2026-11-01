@@ -1156,3 +1156,36 @@ input[type="file"]::file-selector-button {
     animation: none;
   }
 }
+
+.trow + .trow {
+  margin-top: 12px;
+}
+
+#toast {
+  position: fixed;
+  inset-inline: 16px;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  z-index: 100;
+  max-width: 420px;
+  margin-inline: auto;
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: var(--gold-d);
+  color: #fff;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 8px 24px #0003;
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition:
+    opacity 0.25s,
+    transform 0.25s;
+}
+#toast.show {
+  opacity: 1;
+  transform: none;
+}
+.trow select[data-ta] {
+  max-width: 190px;
+}

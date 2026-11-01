@@ -71,3 +71,19 @@ const loadLib = (name) => {
 /* تقسيم قائمة إلى دفعات (حدود Supabase: 1000 صف لكل طلب، وطول الرابط) */
 const chunk = (arr, n) =>
   Array.from({ length: Math.ceil(arr.length / n) }, (_, i) => arr.slice(i * n, i * n + n));
+
+/* إشعار قصير أسفل الشاشة */
+const toast = (msg) => {
+  let t = document.getElementById("toast");
+  if (!t) {
+    t = document.createElement("div");
+    t.id = "toast";
+    t.setAttribute("role", "status");
+    t.setAttribute("aria-live", "polite");
+    document.body.append(t);
+  }
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._h);
+  t._h = setTimeout(() => t.classList.remove("show"), 5000);
+};

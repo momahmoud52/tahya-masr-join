@@ -19,6 +19,7 @@ assets/js/
   admin.js            لوحة الأدمن/HR
   stats.js            لوحة الإحصائيات
   pdf.js              تصدير الإحصائيات إلى PDF
+  realtime.js         التحديث اللحظي بين أعضاء الفريق
   profile.js          البروفايل وتقييم HR
 database/schema.sql   قاعدة البيانات والصلاحيات
 ```

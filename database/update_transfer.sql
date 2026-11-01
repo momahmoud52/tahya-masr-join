@@ -12,11 +12,11 @@ create or replace function protect_application_columns() returns trigger
 language plpgsql security definer set search_path = public as $$
 declare
   ev text[] := array['scores','hr_notes','decision','decision_reason','evaluated_by','evaluated_at',
-                     'committee','transfer_log'];
+                     'committee','target_gov','transfer_log'];
 begin
   if auth.uid() is not null and not is_admin()
      and (to_jsonb(new) - ev) is distinct from (to_jsonb(old) - ev) then
-    raise exception 'عضو HR يستطيع تعديل التقييم والقرار واللجنة فقط';
+    raise exception 'عضو HR يستطيع تعديل التقييم والقرار واللجنة والمحافظة فقط';
   end if;
   return new;
 end $$;

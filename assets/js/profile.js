@@ -1,26 +1,42 @@
 /* بروفايل المتقدم وتقييم HR والقرار */
-/* تحويل المتقدم إلى لجنة أخرى */
-const transferBox = (r) => {
-  const female = r.gender === "أنثى",
-    last = (r.transfer_log || []).slice(-1)[0],
-    options = Object.keys(COMM)
-      .filter((c) => c !== r.committee)
-      .map((c) => {
-        const locked = FEMALE_ONLY.includes(c) && !female;
-        return `<option value="${esc(c)}" ${locked ? "disabled" : ""}>${esc(c)}${locked ? " (للإناث فقط)" : ""}</option>`;
+let openProfile = null;
+
+/* تحويل المتقدم إلى لجنة أو محافظة أخرى */
+const TRANSFER_TYPES = {
+  committee: {
+    label: "اللجنة",
+    noun: "لجنة",
+    list: () => Object.keys(COMM),
+    lock: (o, r) => FEMALE_ONLY.includes(o) && r.gender !== "أنثى",
+  },
+  target_gov: { label: "المحافظة", noun: "محافظة", list: () => GOVS, lock: () => false },
+};
+const transferRow = (r, field, title, placeholder) => {
+  const T = TRANSFER_TYPES[field],
+    options = T.list()
+      .filter((o) => o !== r[field])
+      .map((o) => {
+        const locked = T.lock(o, r);
+        return `<option value="${esc(o)}" ${locked ? "disabled" : ""}>${esc(o)}${locked ? " (للإناث فقط)" : ""}</option>`;
       })
       .join("");
-  return `<div class="transfer"><label>تحويل المتقدم إلى لجنة أخرى</label>
-<div class="bar"><select id="tcom"><option value="">اختر اللجنة الجديدة</option>${options}</select>
-<button class="btn sm gld" id="tbtn" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h13l-4-4"/><path d="M17 17H4l4 4"/></svg>تحويل</button></div>
-${
-  last
-    ? `<p class="muted tnote">آخر تحويل: من «${esc(last.from)}» إلى «${esc(last.to)}» بواسطة ${esc(last.by)} (${new Date(last.at).toLocaleDateString("ar-EG")})</p>`
-    : ""
-}</div>`;
+  return `<div class="trow"><label>${title}</label>
+<div class="bar"><select data-tf="${field}"><option value="">${placeholder}</option>${options}</select>
+<select data-ta="${field}" title="المسؤول عن المقابلة بعد التحويل"><option value="">المسؤول: كما هو</option>${staff
+    .map((x) => `<option value="${x.id}">${esc(x.name)}${x.role === "admin" ? " (أدمن)" : ""}</option>`)
+    .join("")}</select>
+<button class="btn sm gld" data-tbtn="${field}" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h13l-4-4"/><path d="M17 17H4l4 4"/></svg>تحويل</button></div></div>`;
+};
+const transferBox = (r) => {
+  const last = (r.transfer_log || []).slice(-1)[0],
+    note = last
+      ? `<p class="muted tnote">آخر تحويل (${last.type === "gov" ? "المحافظة" : "اللجنة"}): من «${esc(last.from)}» إلى «${esc(last.to)}» بواسطة ${esc(last.by)}${last.hr ? ` — المسؤول: ${esc(last.hr)}` : ""} (${new Date(last.at).toLocaleDateString("ar-EG")})</p>`
+      : "";
+  return `<div class="transfer">${transferRow(r, "committee", "تحويل إلى لجنة أخرى", "اختر اللجنة الجديدة")}${transferRow(r, "target_gov", "تحويل إلى محافظة أخرى", "اختر المحافظة الجديدة")}${note}</div>`;
 };
 
 function profile(id) {
+  openProfile = id;
   const r = rows.find((x) => x.id === id),
     sc = r.scores || {};
   const kv = [
@@ -66,32 +82,65 @@ ${CRIT.map(
     ($("#tot").textContent = [...document.querySelectorAll(".sc")].reduce((a, s) => a + +s.value, 0));
   tot();
   document.querySelectorAll(".sc").forEach((s) => (s.onchange = tot));
-  $("#mx").onclick = () => ($("#modal").style.display = "none");
+  $("#mx").onclick = () => {
+    $("#modal").style.display = "none";
+    openProfile = null;
+  };
   const bindTransfer = () => {
-    $("#tbtn").onclick = async () => {
-      const to = $("#tcom").value;
-      if (!to) return alert("اختر اللجنة الجديدة أولاً");
-      if (!confirm(`تحويل «${r.name_ar}» من «${r.committee}» إلى «${to}»؟`)) return;
-      const log = [
-        ...(r.transfer_log || []),
-        { from: r.committee, to, by: me.name, at: new Date().toISOString() },
-      ];
-      const { data, error } = await sb
-        .from("applications")
-        .update({ committee: to, transfer_log: log })
-        .eq("id", id)
-        .select("id");
-      if (error)
-        return alert(error.code === "23514" ? "هذه اللجنة للإناث فقط" : "تعذر التحويل: " + error.message);
-      if (!data.length) return alert("لا تملك صلاحية تحويل هذا الطلب");
-      Object.assign(r, { committee: to, transfer_log: log });
-      [...document.querySelectorAll("#mbox .kv span")]
-        .find((s) => s.textContent === "اللجنة")
-        ?.nextElementSibling.replaceChildren(to);
-      $("#mbox .transfer").outerHTML = transferBox(r);
-      bindTransfer();
-      draw();
-    };
+    document.querySelectorAll("#mbox [data-tbtn]").forEach((btn) => {
+      btn.onclick = async () => {
+        const field = btn.dataset.tbtn,
+          T = TRANSFER_TYPES[field],
+          to = $(`#mbox [data-tf="${field}"]`).value,
+          assignee = $(`#mbox [data-ta="${field}"]`).value || null,
+          hrName = staff.find((x) => x.id === assignee)?.name;
+        if (!to) return alert(`اختر ${T.label} الجديدة أولاً`);
+        if (
+          !confirm(
+            `تحويل «${r.name_ar}» من ${T.noun} «${r[field]}» إلى «${to}»${hrName ? ` وتعيين ${hrName} مسؤولاً` : ""}؟`,
+          )
+        )
+          return;
+        const log = [
+          ...(r.transfer_log || []),
+          {
+            type: field === "committee" ? "committee" : "gov",
+            from: r[field],
+            to,
+            by: me.name,
+            at: new Date().toISOString(),
+            ...(hrName ? { hr: hrName } : {}),
+          },
+        ];
+        const { data, error } = await sb.rpc("transfer_application", {
+          p_id: id,
+          p_committee: field === "committee" ? to : null,
+          p_gov: field === "target_gov" ? to : null,
+          p_assignee: assignee,
+          p_log: log,
+        });
+        if (error)
+          return alert(error.code === "23514" ? "هذه اللجنة للإناث فقط" : "تعذر التحويل: " + error.message);
+        if (!data) return alert("لا تملك صلاحية تحويل هذا الطلب");
+        Object.assign(r, { [field]: to, transfer_log: log, ...(assignee ? { assigned_to: assignee } : {}) });
+        if (me.role !== "admin" && assignee && assignee !== me.id) {
+          // انتقل الطلب لمسؤول آخر ولم يعد ضمن قائمة هذا الحساب
+          rows = rows.filter((x) => x.id !== id);
+          sel.delete(id);
+          $("#modal").style.display = "none";
+          openProfile = null;
+          draw();
+          return toast(`تم تحويل «${r.name_ar}» وانتقل إلى قائمة ${hrName}`);
+        }
+        const lbl = field === "committee" ? "اللجنة" : "محافظة الانضمام";
+        [...document.querySelectorAll("#mbox .kv span")]
+          .find((x) => x.textContent === lbl)
+          ?.nextElementSibling.replaceChildren(to);
+        $("#mbox .transfer").outerHTML = transferBox(r);
+        bindTransfer();
+        draw();
+      };
+    });
   };
   bindTransfer();
   $("#mdel")?.addEventListener("click", async () => {
