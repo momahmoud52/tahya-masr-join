@@ -223,17 +223,39 @@
             ><button data-t="statsView">لوحة الإحصائيات</button>
           </div>
           <div id="listView">
-            <div class="bar">
-              <input id="fq" placeholder="بحث بالاسم / الرقم القومي" /><select id="fg"></select
-              ><select id="fc"></select>
-              <select id="fs">
-                <option value="">كل الحالات</option>
-                <option value="p">قيد المراجعة</option>
-                <option value="a">مقبول</option>
-                <option value="r">مرفوض</option>
-              </select>
+            <div class="filterbar">
+              <input
+                id="fq"
+                type="search"
+                placeholder="ابحث بالاسم أو الرقم القومي أو الهاتف"
+                aria-label="بحث"
+              />
+              <button class="btn-ghost sm" id="fToggle" type="button" aria-expanded="false">
+                <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M22 3H2l8 9.5V19l4 2v-8.5L22 3z" /></svg
+                >تصفية متقدمة<span class="badge" id="fBadge" hidden>0</span>
+              </button>
+              <button class="btn-ghost sm" id="colToggle" type="button" aria-expanded="false">
+                <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <path d="M9 3v18M15 3v18" /></svg
+                >الأعمدة
+              </button>
               <span id="cnt" class="muted"></span>
             </div>
+            <div id="fPanel" class="fpanel" hidden>
+              <div class="fgrid" id="fFields"></div>
+              <div class="fact">
+                <button class="btn-ghost sm" id="fClear" type="button" hidden>مسح كل الفلاتر</button>
+              </div>
+            </div>
+            <div id="colPanel" class="fpanel" hidden>
+              <div class="colgrid" id="colList"></div>
+              <div class="fact">
+                <button class="btn-ghost sm" id="colReset" type="button">الأعمدة الافتراضية</button>
+              </div>
+            </div>
+            <div id="fChips" class="chips"></div>
             <div class="bar" id="formBar" hidden>
               <button class="switch on" id="formToggle" type="button" role="switch" aria-checked="true">
                 <span class="track"></span><span id="formLbl">الاستمارة مفتوحة للتسجيل</span>
@@ -250,18 +272,7 @@
             </div>
             <div class="tw">
               <table>
-                <thead>
-                  <tr>
-                    <th><input type="checkbox" id="all" /></th>
-                    <th>الاسم</th>
-                    <th>الرقم القومي</th>
-                    <th>المحافظة</th>
-                    <th>اللجنة</th>
-                    <th>الهاتف</th>
-                    <th>HR المسؤول</th>
-                    <th>الحالة</th>
-                  </tr>
-                </thead>
+                <thead id="thead"></thead>
                 <tbody id="tb"></tbody>
               </table>
             </div>
@@ -278,6 +289,8 @@
     <script src="assets/js/data.js"></script>
     <script src="assets/js/loader.js"></script>
     <script src="assets/js/form.js"></script>
+    <script src="assets/js/filters.js"></script>
+    <script src="assets/js/table.js"></script>
     <script src="assets/js/admin.js"></script>
     <script src="assets/js/stats.js"></script>
     <script src="assets/js/pdf.js"></script>

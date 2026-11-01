@@ -1,4 +1,25 @@
 /* بروفايل المتقدم وتقييم HR والقرار */
+/* تحويل المتقدم إلى لجنة أخرى */
+const transferBox = (r) => {
+  const female = r.gender === "أنثى",
+    last = (r.transfer_log || []).slice(-1)[0],
+    options = Object.keys(COMM)
+      .filter((c) => c !== r.committee)
+      .map((c) => {
+        const locked = FEMALE_ONLY.includes(c) && !female;
+        return `<option value="${esc(c)}" ${locked ? "disabled" : ""}>${esc(c)}${locked ? " (للإناث فقط)" : ""}</option>`;
+      })
+      .join("");
+  return `<div class="transfer"><label>تحويل المتقدم إلى لجنة أخرى</label>
+<div class="bar"><select id="tcom"><option value="">اختر اللجنة الجديدة</option>${options}</select>
+<button class="btn sm gld" id="tbtn" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h13l-4-4"/><path d="M17 17H4l4 4"/></svg>تحويل</button></div>
+${
+  last
+    ? `<p class="muted tnote">آخر تحويل: من «${esc(last.from)}» إلى «${esc(last.to)}» بواسطة ${esc(last.by)} (${new Date(last.at).toLocaleDateString("ar-EG")})</p>`
+    : ""
+}</div>`;
+};
+
 function profile(id) {
   const r = rows.find((x) => x.id === id),
     sc = r.scores || {};
@@ -25,6 +46,7 @@ function profile(id) {
   $("#mbox").innerHTML =
     `<div class="bar"><h2 style="margin:0;flex:1">${esc(r.name_ar)}</h2><button class="btn sm alt" id="mx">إغلاق</button></div>
 <div class="pf"><img src="${esc(r.photo_url)}" alt="الصورة الشخصية"><div class="kv">${kv}</div></div>
+${transferBox(r)}
 <h3 style="border-inline-start:5px solid var(--gold);padding-inline-start:10px">تقييم المقابلة الشخصية (HR)</h3>
 ${CRIT.map(
   (c, i) =>
@@ -45,6 +67,33 @@ ${CRIT.map(
   tot();
   document.querySelectorAll(".sc").forEach((s) => (s.onchange = tot));
   $("#mx").onclick = () => ($("#modal").style.display = "none");
+  const bindTransfer = () => {
+    $("#tbtn").onclick = async () => {
+      const to = $("#tcom").value;
+      if (!to) return alert("اختر اللجنة الجديدة أولاً");
+      if (!confirm(`تحويل «${r.name_ar}» من «${r.committee}» إلى «${to}»؟`)) return;
+      const log = [
+        ...(r.transfer_log || []),
+        { from: r.committee, to, by: me.name, at: new Date().toISOString() },
+      ];
+      const { data, error } = await sb
+        .from("applications")
+        .update({ committee: to, transfer_log: log })
+        .eq("id", id)
+        .select("id");
+      if (error)
+        return alert(error.code === "23514" ? "هذه اللجنة للإناث فقط" : "تعذر التحويل: " + error.message);
+      if (!data.length) return alert("لا تملك صلاحية تحويل هذا الطلب");
+      Object.assign(r, { committee: to, transfer_log: log });
+      [...document.querySelectorAll("#mbox .kv span")]
+        .find((s) => s.textContent === "اللجنة")
+        ?.nextElementSibling.replaceChildren(to);
+      $("#mbox .transfer").outerHTML = transferBox(r);
+      bindTransfer();
+      draw();
+    };
+  };
+  bindTransfer();
   $("#mdel")?.addEventListener("click", async () => {
     if (await deleteApplications([id])) $("#modal").style.display = "none";
   });

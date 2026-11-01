@@ -45,8 +45,7 @@ async function init() {
   $("#dash").hidden = false;
   $("#who").textContent = `${me.name} (${me.role === "admin" ? "أدمن" : "HR"})`;
   $("#adminBar").hidden = $("#formBar").hidden = me.role !== "admin";
-  $("#fg").innerHTML = opts(GOVS, "كل المحافظات");
-  $("#fc").innerHTML = opts(Object.keys(COMM), "كل اللجان");
+  buildFilterPanel();
   $("#asg").innerHTML = opts(
     staff.map((x) => x.name),
     "اختر عضو HR",
@@ -82,40 +81,23 @@ async function load() {
   draw();
 }
 const stOf = (r) => (r.decision === "accepted" ? "a" : r.decision === "rejected" ? "r" : "p");
-const view = () => {
-  const q = $("#fq").value.trim(),
-    g = $("#fg").value,
-    c = $("#fc").value,
-    s = $("#fs").value;
-  return rows.filter(
-    (r) =>
-      (!q || r.name_ar.includes(q) || r.national_id.includes(q)) &&
-      (!g || r.target_gov === g) &&
-      (!c || r.committee === c) &&
-      (!s || stOf(r) === s),
-  );
-};
+const view = () => applyFilters(rows);
+let lastN = 0;
+const setCount = () => ($("#cnt").textContent = `${lastN} طلب` + (sel.size ? ` | محدد ${sel.size}` : ""));
 function draw() {
   if (!$("#statsView").hidden) stats();
   const v = view();
-  $("#cnt").textContent = v.length + " طلب";
-  $("#tb").innerHTML =
-    v
-      .map((r) => {
-        const s = stOf(r),
-          t = { p: ["t-p", "قيد المراجعة"], a: ["t-a", "مقبول"], r: ["t-r", "مرفوض"] }[s];
-        return `<tr><td><input type="checkbox" class="ck" data-id="${r.id}" ${sel.has(r.id) ? "checked" : ""}></td><td data-l="الاسم"><button class="nm" data-id="${r.id}">${esc(r.name_ar)}</button></td><td data-l="الرقم القومي">${r.national_id}</td><td data-l="المحافظة">${esc(r.target_gov)}</td><td data-l="اللجنة">${esc(r.committee)}</td><td data-l="الهاتف">${esc(r.phone)}</td><td data-l="HR المسؤول">${esc(staff.find((x) => x.id === r.assigned_to)?.name || "—")}</td><td data-l="الحالة"><span class="tag ${t[0]}">${t[1]}</span></td></tr>`;
-      })
-      .join("") || '<tr><td colspan="8">لا توجد نتائج</td></tr>';
+  lastN = v.length;
+  renderTable(v);
+  setCount();
+  renderChips();
 }
-["fq", "fg", "fc", "fs"].forEach((i) => ($("#" + i).oninput = draw));
-$("#all").onchange = (e) => {
-  view().forEach((r) => (e.target.checked ? sel.add(r.id) : sel.delete(r.id)));
-  draw();
-};
 $("#tb").onclick = (e) => {
   const t = e.target;
-  if (t.classList.contains("ck")) t.checked ? sel.add(t.dataset.id) : sel.delete(t.dataset.id);
+  if (t.classList.contains("ck")) {
+    t.checked ? sel.add(t.dataset.id) : sel.delete(t.dataset.id);
+    setCount();
+  }
   if (t.classList.contains("nm")) profile(t.dataset.id);
 };
 $("#asgBtn").onclick = async () => {
@@ -251,12 +233,10 @@ $("#delBtn").onclick = () => deleteApplications([...sel]);
 
 /* تحديث البيانات مع الإبقاء على الفلاتر */
 $("#refreshBtn").onclick = async () => {
-  const b = $("#refreshBtn"),
-    keep = ["fq", "fg", "fc", "fs"].map((id) => [id, $("#" + id).value]);
+  const b = $("#refreshBtn");
   b.classList.add("spin");
   b.disabled = true;
   await init();
-  keep.forEach(([id, v]) => ($("#" + id).value = v));
   draw();
   b.classList.remove("spin");
   b.disabled = false;

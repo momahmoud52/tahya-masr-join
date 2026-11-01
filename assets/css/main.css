@@ -906,3 +906,253 @@ input[type="file"]::file-selector-button {
 .btn-ghost {
   white-space: nowrap;
 }
+
+.transfer {
+  background: #fbf6ea;
+  border: 1px solid #ecdcb4;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 14px 0;
+}
+.transfer .bar {
+  margin: 6px 0 0;
+}
+.transfer .bar select {
+  flex: 1;
+}
+.tnote {
+  font-size: 13px;
+  margin: 8px 0 0;
+}
+
+.filterbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.filterbar #fq {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+.badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 99px;
+  background: var(--red);
+  color: #fff;
+  font-size: 12px;
+}
+.btn-ghost[aria-expanded="true"] {
+  background: var(--red);
+  color: #fff;
+}
+.btn-ghost[aria-expanded="true"] .badge {
+  background: #fff;
+  color: var(--red);
+}
+.fpanel {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--gold);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+.fgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px 14px;
+}
+.ff label {
+  font-size: 13px;
+  color: var(--mut);
+  margin-bottom: 3px;
+}
+.msel {
+  position: relative;
+}
+.msel summary {
+  list-style: none;
+  cursor: pointer;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 36px 9px 12px;
+  background: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+}
+.msel summary::-webkit-details-marker {
+  display: none;
+}
+.msel summary::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border: solid var(--gold-d);
+  border-width: 0 2px 2px 0;
+  transform: translateY(-70%) rotate(45deg);
+}
+.msel[open] summary {
+  border-color: var(--gold);
+}
+.mlist {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(100% + 4px);
+  z-index: 30;
+  min-width: 200px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 10px 24px #0002;
+  padding: 8px;
+}
+.mitems {
+  max-height: 220px;
+  overflow: auto;
+}
+.mi {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--ink);
+  cursor: pointer;
+}
+.mi:hover {
+  background: #fbf6ea;
+}
+.msearch {
+  margin-bottom: 6px;
+}
+.mfoot {
+  padding-top: 4px;
+  text-align: left;
+}
+.link {
+  background: none;
+  border: 0;
+  color: var(--red);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.rng {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.rng input {
+  min-width: 0;
+}
+.rng span {
+  color: var(--mut);
+  font-size: 13px;
+}
+.fact {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+.colgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 2px 12px;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px 3px 12px;
+  border: 1px solid #ecdcb4;
+  border-radius: 99px;
+  background: #fbf0d4;
+  color: #6b4e10;
+  font-size: 13px;
+  font-weight: 600;
+}
+.chip button {
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--red);
+  line-height: 1;
+  cursor: pointer;
+}
+
+@media (min-width: 761px) {
+  .ff.wide {
+    grid-column: span 2;
+  }
+}
+
+.res-msg {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #ecdcb4;
+  background: #fbf6ea;
+  animation: pop 0.45s ease-out;
+}
+.res-msg .ico {
+  width: 34px;
+  height: 34px;
+  margin-bottom: 6px;
+}
+.res-msg p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.9;
+}
+.res-t-a .res-msg {
+  background: linear-gradient(135deg, #fbecc4, #fff8e6);
+  border-color: var(--gold);
+}
+.res-t-a .res-msg .ico {
+  color: var(--gold-d);
+}
+.res-t-r .res-msg .ico {
+  color: var(--red);
+}
+.res .reason {
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--mut);
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .res-msg {
+    animation: none;
+  }
+}
