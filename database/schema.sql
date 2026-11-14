@@ -37,7 +37,9 @@ create table if not exists applications (
   decision_reason text,
   evaluated_by    uuid references staff(id) on delete set null,
   evaluated_at    timestamptz,
-  transfer_log    jsonb not null default '[]'::jsonb
+  transfer_log    jsonb not null default '[]'::jsonb,
+  invited_at      timestamptz,
+  invited_by      text
 );
 
 -- مبادرة رائدات مصر للإناث فقط (لا تُطبَّق على الصفوف القديمة)
@@ -133,11 +135,11 @@ create or replace function protect_application_columns() returns trigger
 language plpgsql security definer set search_path = public as $$
 declare
   ev text[] := array['scores','hr_notes','decision','decision_reason','evaluated_by','evaluated_at',
-                     'committee','target_gov','transfer_log','assigned_to'];
+                     'committee','target_gov','transfer_log','assigned_to','invited_at','invited_by'];
 begin
   if auth.uid() is not null and not is_admin()
      and (to_jsonb(new) - ev) is distinct from (to_jsonb(old) - ev) then
-    raise exception 'عضو HR يستطيع تعديل التقييم والقرار واللجنة والمحافظة والمسؤول فقط';
+    raise exception 'عضو HR يستطيع تعديل التقييم والقرار واللجنة والمحافظة والمسؤول والدعوة فقط';
   end if;
   return new;
 end $$;

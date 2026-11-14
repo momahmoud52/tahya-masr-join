@@ -37,6 +37,13 @@ const FILTER_FIELDS = [
     opts: () => ["محوَّل", "غير محوَّل"],
     get: (r) => (r.transfer_log?.length ? "محوَّل" : "غير محوَّل"),
   },
+  {
+    k: "invited",
+    l: "دعوة المقابلة",
+    t: "multi",
+    opts: () => ["تمت دعوته", "لم يُدعَ بعد"],
+    get: (r) => (r.invited_at ? "تمت دعوته" : "لم يُدعَ بعد"),
+  },
   { k: "university", l: "الجامعة", t: "text" },
   { k: "faculty", l: "الكلية", t: "text" },
   { k: "school", l: "المدرسة", t: "text" },

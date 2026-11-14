@@ -1189,3 +1189,11 @@ input[type="file"]::file-selector-button {
 .trow select[data-ta] {
   max-width: 190px;
 }
+
+.mailbtn{display:inline-grid;place-items:center;width:36px;height:36px;border:1.5px solid var(--line);border-radius:50%;background:#fff;color:var(--gold-d);cursor:pointer;transition:background .2s,color .2s}
+.mailbtn:hover{background:var(--red);border-color:var(--red);color:#fff}
+.mailbtn.done{background:#fbf0d4;border-color:var(--gold)}
+#inviteModal{position:fixed;inset:0;z-index:70;display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:20px;background:#0009}
+#inviteModal .box{width:100%;max-width:640px;padding:22px;border-radius:12px;background:#fff}
+.mailpreview{max-height:280px;overflow:auto;padding:14px;border:1px solid #ecdcb4;border-radius:10px;background:#fbf6ea;font-size:14px;line-height:1.9;white-space:pre-wrap}
+.notice{padding:8px 12px;border-radius:8px;background:#fbe1e3;color:var(--red)}

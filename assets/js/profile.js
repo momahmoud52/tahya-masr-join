@@ -60,7 +60,7 @@ function profile(id) {
     .map((x) => `<span>${x[0]}</span><b>${esc(x[1])}</b>`)
     .join("");
   $("#mbox").innerHTML =
-    `<div class="bar"><h2 style="margin:0;flex:1">${esc(r.name_ar)}</h2><button class="btn sm alt" id="mx">إغلاق</button></div>
+    `<div class="bar"><h2 style="margin:0;flex:1">${esc(r.name_ar)}</h2><button class="btn-ghost sm" data-mail="${r.id}" type="button">${MAIL_SVG}دعوة المقابلة</button><button class="btn sm alt" id="mx">إغلاق</button></div>
 <div class="pf"><img src="${esc(r.photo_url)}" alt="الصورة الشخصية"><div class="kv">${kv}</div></div>
 ${transferBox(r)}
 <h3 style="border-inline-start:5px solid var(--gold);padding-inline-start:10px">تقييم المقابلة الشخصية (HR)</h3>
@@ -76,7 +76,11 @@ ${CRIT.map(
 <label style="margin-top:10px">القرار النهائي</label>
 <div class="dec"><label class="a"><input type="radio" name="dc" value="accepted" ${r.decision === "accepted" ? "checked" : ""}>✔ قبول</label><label class="r"><input type="radio" name="dc" value="rejected" ${r.decision === "rejected" ? "checked" : ""}>✖ رفض</label></div>
 <label>سبب القرار (إجباري)</label><textarea id="reason" rows="2">${esc(r.decision_reason)}</textarea>
-<div class="err" id="merr"></div><button class="btn full" id="msave">حفظ التقييم والقرار</button>${me.role === "admin" ? '<button class="btn-ghost btn-danger full" id="mdel" type="button">حذف الطلب نهائياً</button>' : ""}`;
+<div class="err" id="merr"></div><button class="btn full" id="msave">حفظ التقييم والقرار</button>${
+  r.decision
+    ? '<button class="btn-ghost full" id="mundo" type="button">إلغاء القرار وإعادة الطلب قيد المراجعة</button>'
+    : ""
+}${me.role === "admin" ? '<button class="btn-ghost btn-danger full" id="mdel" type="button">حذف الطلب نهائياً</button>' : ""}`;
   $("#modal").style.display = "flex";
   const tot = () =>
     ($("#tot").textContent = [...document.querySelectorAll(".sc")].reduce((a, s) => a + +s.value, 0));
@@ -143,6 +147,20 @@ ${CRIT.map(
     });
   };
   bindTransfer();
+  $("#mundo")?.addEventListener("click", async () => {
+    const was = r.decision === "accepted" ? "القبول" : "الرفض";
+    if (!confirm(`إلغاء قرار ${was} للمتقدم «${r.name_ar}» وإعادته قيد المراجعة؟`)) return;
+    const undo = { decision: null, decision_reason: null };
+    const { data, error } = await sb.from("applications").update(undo).eq("id", id).select("id");
+    if (error) return alert("تعذر إلغاء القرار: " + error.message);
+    if (!data.length) return alert("لا تملك صلاحية تعديل هذا الطلب");
+    Object.assign(r, undo);
+    document.querySelectorAll("input[name=dc]").forEach((i) => (i.checked = false));
+    $("#reason").value = "";
+    $("#mundo").hidden = true;
+    draw();
+    toast("أُلغي القرار وعاد الطلب قيد المراجعة");
+  });
   $("#mdel")?.addEventListener("click", async () => {
     if (await deleteApplications([id])) $("#modal").style.display = "none";
   });

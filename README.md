@@ -20,6 +20,7 @@ assets/js/
   stats.js            لوحة الإحصائيات
   pdf.js              تصدير الإحصائيات إلى PDF
   realtime.js         التحديث اللحظي بين أعضاء الفريق
+  invite.js           دعوة المقابلة: رسالة جاهزة تُفتح في Gmail
   profile.js          البروفايل وتقييم HR
 database/schema.sql   قاعدة البيانات والصلاحيات
 ```

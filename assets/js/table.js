@@ -7,6 +7,7 @@ const COLUMNS = [
     fixed: true,
     cell: (r) => `<button class="nm" data-id="${r.id}">${esc(r.name_ar)}</button>`,
   },
+  { k: "mail", l: "دعوة", fixed: true, cell: (r) => mailCell(r) },
   { k: "national_id", l: "الرقم القومي", def: true },
   { k: "target_gov", l: "المحافظة", def: true },
   { k: "committee", l: "اللجنة", def: true },
@@ -29,6 +30,7 @@ const COLUMNS = [
   { k: "whatsapp", l: "واتساب" },
   { k: "score", l: "درجة التقييم", get: (r) => scoreOf(r) ?? "—" },
   { k: "created_at", l: "تاريخ التسجيل", get: (r) => fmtDate(r.created_at) },
+  { k: "invited_at", l: "تاريخ الدعوة", get: (r) => fmtDate(r.invited_at) || "—" },
 ];
 const defaultCols = () => new Set(COLUMNS.filter((c) => c.def || c.fixed).map((c) => c.k));
 const loadCols = () => {

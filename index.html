@@ -281,7 +281,29 @@
         </div>
       </div>
     </div>
-    <div id="modal"><div class="box" id="mbox"></div></div>
+    <div id="inviteModal">
+<div class="box">
+<div class="bar"><h2 class="grow-title">دعوة المقابلة الشخصية</h2><button class="btn sm alt" id="invClose" type="button">إغلاق</button></div>
+<p class="muted" id="invTo"></p>
+<p class="tnote notice" id="invNotice" hidden></p>
+<div class="grid">
+<div><label for="invDate">التاريخ</label><input id="invDate" type="date" /></div>
+<div><label for="invTime">الوقت</label><input id="invTime" type="time" /></div>
+<div class="full"><label for="invPlace">المكان</label><input id="invPlace" placeholder="مثال: مقر الاتحاد، الدور الثاني" /></div>
+<div class="full"><label for="invNote">ملاحظة إضافية (اختياري)</label><input id="invNote" /></div>
+<div class="full"><label for="invSender">اسمك في التوقيع</label><input id="invSender" /></div>
+</div>
+<label class="mt-8">معاينة الرسالة</label>
+<div class="mailpreview" id="invPreview"></div>
+<p class="muted tnote">الحقول الفارغة تظهر بين [ ] لتكتبها داخل الرسالة قبل الإرسال.</p>
+<div class="bar">
+<button class="btn" id="invGmail" type="button">فتح في Gmail</button>
+<button class="btn alt" id="invMailto" type="button">تطبيق البريد</button>
+<button class="btn-ghost" id="invCopy" type="button">نسخ الرسالة</button>
+</div>
+</div>
+</div>
+<div id="modal"><div class="box" id="mbox"></div></div>
 
     <script src="assets/js/config.js"></script>
     <script src="assets/js/client.js"></script>
@@ -295,6 +317,7 @@
     <script src="assets/js/stats.js"></script>
     <script src="assets/js/pdf.js"></script>
     <script src="assets/js/profile.js"></script>
+<script src="assets/js/invite.js"></script>
     <script src="assets/js/realtime.js"></script>
   </body>
 </html>
