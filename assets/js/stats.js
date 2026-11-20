@@ -78,6 +78,7 @@ function stats() {
 <p style="text-align:center;color:var(--mut);margin:8px 0 0">التناسب ذكور : إناث = ${m} : ${f}</p></div>
 <div class="card"><h2>الأعمار</h2>${bars(grp)}
 <p style="color:var(--mut);font-size:13px;margin:10px 0 0">المتوسط ${avgOf(ages)} سنة، الوسيط ${ages.length ? ages[Math.floor(ages.length / 2)] : "—"}، أصغر سن ${ages[0] ?? "—"}، أكبر سن ${ages[ages.length - 1] ?? "—"}</p></div></div>
+${extraCards(R)}
 <div class="card"><h2>ترتيب المحافظات من الأعلى إلى الأقل</h2>
 <div class="rk h"><span>#</span><span>المحافظة</span><span>التوزيع (<i style="color:var(--gold-d)">ذكور</i> / <i style="color:var(--red)">إناث</i>)</span><span>العدد</span><span>النسبة</span><span>متوسط السن</span></div>
 ${G.map((x, i) => `<div class="rk"><span>${i + 1}</span><b>${x.g}</b><div class="bt"><div class="sg" style="width:${(x.n / mxg) * 100}%"><i class="m" style="flex:${x.m}"></i><i class="f" style="flex:${x.f}"></i></div></div><b>${x.n}</b><span>${pc(x.n, n)}%</span><span>${x.avg}</span></div>`).join("")}</div>

@@ -29,7 +29,10 @@ const fmtDay = (d) =>
 const fmtTime = (t) => {
   if (!t) return "";
   const [h, m] = t.split(":");
-  return new Date(2000, 0, 1, +h, +m).toLocaleTimeString("ar-EG-u-nu-latn", { hour: "numeric", minute: "2-digit" });
+  return new Date(2000, 0, 1, +h, +m).toLocaleTimeString("ar-EG-u-nu-latn", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
 };
 
 /* نص الرسالة: يراعي جنس المتقدم، والحقول الفارغة تظهر بين [ ] ليكتبها المرسل */
@@ -100,12 +103,13 @@ function openInvite(id) {
   $("#invTo").textContent = `إلى: ${r.name_ar} <${r.email}>`;
   $("#invNotice").hidden = !r.invited_at;
   if (r.invited_at)
-    $("#invNotice").textContent = `سبق فتح دعوة لهذا المتقدم بتاريخ ${fmtDate(r.invited_at)} بواسطة ${r.invited_by || ""}.`;
+    $("#invNotice").textContent =
+      `سبق فتح دعوة لهذا المتقدم بتاريخ ${fmtDate(r.invited_at)} بواسطة ${r.invited_by || ""}.`;
   renderInvite();
-  $("#inviteModal").style.display = "flex";
+  openLayer("invite");
 }
 const closeInvite = () => {
-  $("#inviteModal").style.display = "none";
+  closeLayer("invite");
   inviteId = null;
 };
 
@@ -144,9 +148,14 @@ $("#invCopy").onclick = async () => {
     toast("تعذر النسخ، حدّد النص من المعاينة وانسخه يدوياً");
   }
 };
-["invDate", "invTime", "invPlace", "invNote", "invSender"].forEach((id) => $("#" + id).addEventListener("input", renderInvite));
+["invDate", "invTime", "invPlace", "invNote", "invSender"].forEach((id) =>
+  $("#" + id).addEventListener("input", renderInvite),
+);
 $("#invClose").onclick = closeInvite;
-document.addEventListener("keydown", (e) => e.key === "Escape" && $("#inviteModal").style.display === "flex" && closeInvite());
+document.addEventListener(
+  "keydown",
+  (e) => e.key === "Escape" && $("#inviteModal").style.display === "flex" && closeInvite(),
+);
 document.addEventListener("click", (e) => {
   const b = e.target.closest("[data-mail]");
   if (b) openInvite(b.dataset.mail);

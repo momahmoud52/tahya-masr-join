@@ -262,8 +262,7 @@
               </button>
             </div>
             <div class="bar" id="adminBar">
-              <select id="asg"></select
-              ><button class="btn sm gld" id="asgBtn">توزيع المحددين</button>
+              <button class="btn sm gld" id="asgOpen" type="button">توزيع / إزالة المسؤول</button>
               <button class="btn sm btn-danger" id="delBtn" type="button">حذف المحدد</button>
               <button class="btn sm alt" id="exp">تصدير Excel</button
               ><label class="btn sm alt btn-file"
@@ -281,43 +280,72 @@
         </div>
       </div>
     </div>
+    <div id="assignModal">
+      <div class="box">
+        <div class="bar">
+          <h2 class="grow-title">توزيع المتقدمين على الأعضاء</h2>
+          <button class="btn sm alt" id="asgClose" type="button">إغلاق</button>
+        </div>
+        <p class="muted" id="asgInfo"></p>
+        <label id="asgListLabel">اختر الأعضاء</label>
+        <div class="colgrid" id="asgList"></div>
+        <label class="mt-8">الإجراء</label>
+        <div class="seg modes">
+          <label><input type="radio" name="asgMode" value="add" checked /><span>إضافة</span></label>
+          <label><input type="radio" name="asgMode" value="replace" /><span>استبدال</span></label>
+          <label><input type="radio" name="asgMode" value="remove" /><span>إزالة الأعضاء</span></label>
+          <label><input type="radio" name="asgMode" value="clear" /><span>إزالة كل المسؤولين</span></label>
+        </div>
+        <p class="muted tnote" id="asgHelp"></p>
+        <div class="bar"><button class="btn" id="asgApply" type="button">تطبيق</button></div>
+      </div>
+    </div>
     <div id="inviteModal">
-<div class="box">
-<div class="bar"><h2 class="grow-title">دعوة المقابلة الشخصية</h2><button class="btn sm alt" id="invClose" type="button">إغلاق</button></div>
-<p class="muted" id="invTo"></p>
-<p class="tnote notice" id="invNotice" hidden></p>
-<div class="grid">
-<div><label for="invDate">التاريخ</label><input id="invDate" type="date" /></div>
-<div><label for="invTime">الوقت</label><input id="invTime" type="time" /></div>
-<div class="full"><label for="invPlace">المكان</label><input id="invPlace" placeholder="مثال: مقر الاتحاد، الدور الثاني" /></div>
-<div class="full"><label for="invNote">ملاحظة إضافية (اختياري)</label><input id="invNote" /></div>
-<div class="full"><label for="invSender">اسمك في التوقيع</label><input id="invSender" /></div>
-</div>
-<label class="mt-8">معاينة الرسالة</label>
-<div class="mailpreview" id="invPreview"></div>
-<p class="muted tnote">الحقول الفارغة تظهر بين [ ] لتكتبها داخل الرسالة قبل الإرسال.</p>
-<div class="bar">
-<button class="btn" id="invGmail" type="button">فتح في Gmail</button>
-<button class="btn alt" id="invMailto" type="button">تطبيق البريد</button>
-<button class="btn-ghost" id="invCopy" type="button">نسخ الرسالة</button>
-</div>
-</div>
-</div>
-<div id="modal"><div class="box" id="mbox"></div></div>
+      <div class="box">
+        <div class="bar">
+          <h2 class="grow-title">دعوة المقابلة الشخصية</h2>
+          <button class="btn sm alt" id="invClose" type="button">إغلاق</button>
+        </div>
+        <p class="muted" id="invTo"></p>
+        <p class="tnote notice" id="invNotice" hidden></p>
+        <div class="grid">
+          <div><label for="invDate">التاريخ</label><input id="invDate" type="date" /></div>
+          <div><label for="invTime">الوقت</label><input id="invTime" type="time" /></div>
+          <div class="full">
+            <label for="invPlace">المكان</label
+            ><input id="invPlace" placeholder="مثال: مقر الاتحاد، الدور الثاني" />
+          </div>
+          <div class="full"><label for="invNote">ملاحظة إضافية (اختياري)</label><input id="invNote" /></div>
+          <div class="full"><label for="invSender">اسمك في التوقيع</label><input id="invSender" /></div>
+        </div>
+        <label class="mt-8">معاينة الرسالة</label>
+        <div class="mailpreview" id="invPreview"></div>
+        <p class="muted tnote">الحقول الفارغة تظهر بين [ ] لتكتبها داخل الرسالة قبل الإرسال.</p>
+        <div class="bar">
+          <button class="btn" id="invGmail" type="button">فتح في Gmail</button>
+          <button class="btn alt" id="invMailto" type="button">تطبيق البريد</button>
+          <button class="btn-ghost" id="invCopy" type="button">نسخ الرسالة</button>
+        </div>
+      </div>
+    </div>
+    <div id="modal"><div class="box" id="mbox"></div></div>
 
     <script src="assets/js/config.js"></script>
     <script src="assets/js/client.js"></script>
     <script src="assets/js/utils.js"></script>
     <script src="assets/js/data.js"></script>
     <script src="assets/js/loader.js"></script>
+    <script src="assets/js/nav.js"></script>
     <script src="assets/js/form.js"></script>
     <script src="assets/js/filters.js"></script>
     <script src="assets/js/table.js"></script>
     <script src="assets/js/admin.js"></script>
     <script src="assets/js/stats.js"></script>
+    <script src="assets/js/stats-extra.js"></script>
     <script src="assets/js/pdf.js"></script>
     <script src="assets/js/profile.js"></script>
-<script src="assets/js/invite.js"></script>
+    <script src="assets/js/invite.js"></script>
+    <script src="assets/js/assign.js"></script>
     <script src="assets/js/realtime.js"></script>
   </body>
 </html>

@@ -30,7 +30,7 @@ create table if not exists applications (
   age             int,
   committee       text,
   photo_url       text,
-  assigned_to     uuid references staff(id) on delete set null,
+  assignees       uuid[] not null default '{}',
   scores          jsonb,
   hr_notes        text,
   decision        text check (decision in ('accepted','rejected')),
@@ -46,6 +46,8 @@ create table if not exists applications (
 alter table applications drop constraint if exists female_only_initiative;
 alter table applications add constraint female_only_initiative
   check (committee <> 'المبادرة الوطنية رائدات مصر' or gender = 'أنثى') not valid;
+
+create index if not exists applications_assignees_gin on applications using gin (assignees);
 
 -- 2) دالة التحقق من الأدمن
 create or replace function is_admin() returns boolean
@@ -77,19 +79,19 @@ grant execute on function form_is_open() to anon, authenticated;
 drop policy if exists "public can apply" on applications;
 create policy "public can apply" on applications
   for insert to anon, authenticated
-  with check (decision is null and assigned_to is null and scores is null
+  with check (decision is null and assignees = '{}'::uuid[] and scores is null
               and (form_is_open() or is_admin()));
 
 drop policy if exists "read own or admin" on applications;
 create policy "read own or admin" on applications
   for select to authenticated
-  using (is_admin() or assigned_to = auth.uid());
+  using (is_admin() or assignees @> array[auth.uid()]);
 
 drop policy if exists "update own or admin" on applications;
 create policy "update own or admin" on applications
   for update to authenticated
-  using (is_admin() or assigned_to = auth.uid())
-  with check (is_admin() or assigned_to = auth.uid());
+  using (is_admin() or assignees @> array[auth.uid()])
+  with check (is_admin() or assignees @> array[auth.uid()]);
 
 drop policy if exists "admin delete" on applications;
 create policy "admin delete" on applications
@@ -135,7 +137,7 @@ create or replace function protect_application_columns() returns trigger
 language plpgsql security definer set search_path = public as $$
 declare
   ev text[] := array['scores','hr_notes','decision','decision_reason','evaluated_by','evaluated_at',
-                     'committee','target_gov','transfer_log','assigned_to','invited_at','invited_by'];
+                     'committee','target_gov','transfer_log','assignees','invited_at','invited_by'];
 begin
   if auth.uid() is not null and not is_admin()
      and (to_jsonb(new) - ev) is distinct from (to_jsonb(old) - ev) then
@@ -192,18 +194,58 @@ create or replace function transfer_application(
 language plpgsql security definer set search_path = public as $$
 declare ok boolean;
 begin
-  select (is_admin() or assigned_to = auth.uid()) into ok from applications where id = p_id;
+  select (is_admin() or assignees @> array[auth.uid()]) into ok from applications where id = p_id;
   if not coalesce(ok, false) then return false; end if;
   update applications set
-    committee    = coalesce(p_committee, committee),
-    target_gov   = coalesce(p_gov, target_gov),
-    assigned_to  = coalesce(p_assignee, assigned_to),
+    committee  = coalesce(p_committee, committee),
+    target_gov = coalesce(p_gov, target_gov),
+    assignees  = case
+      when p_assignee is null then assignees
+      when is_admin() then array[p_assignee]
+      else (select array_agg(distinct x) from unnest(array_remove(assignees, auth.uid()) || p_assignee) x)
+    end,
     transfer_log = coalesce(p_log, transfer_log)
   where id = p_id;
   return true;
 end $$;
 revoke all on function transfer_application(uuid, text, text, uuid, jsonb) from public, anon;
 grant execute on function transfer_application(uuid, text, text, uuid, jsonb) to authenticated;
+
+-- 5) التوزيع الجماعي للأدمن: إضافة / استبدال / إزالة أعضاء / إزالة كل المسؤولين
+create or replace function assign_applications(p_ids uuid[], p_mode text, p_staff uuid[] default '{}')
+returns integer
+language plpgsql security definer set search_path = public as $$
+declare n integer;
+begin
+  if not is_admin() then raise exception 'التوزيع للأدمن فقط'; end if;
+  if p_mode not in ('add', 'replace', 'remove', 'clear') then raise exception 'إجراء غير معروف'; end if;
+  if exists (select 1 from unnest(p_staff) s where not exists (select 1 from staff where id = s)) then
+    raise exception 'أحد الأعضاء غير موجود';
+  end if;
+  update applications set assignees = case p_mode
+    when 'add'     then (select coalesce(array_agg(distinct x), '{}') from unnest(assignees || p_staff) x)
+    when 'replace' then (select coalesce(array_agg(distinct x), '{}') from unnest(p_staff) x)
+    when 'remove'  then array(select x from unnest(assignees) x where x <> all(p_staff))
+    else '{}'::uuid[]
+  end
+  where id = any(p_ids);
+  get diagnostics n = row_count;
+  return n;
+end $$;
+revoke all on function assign_applications(uuid[], text, uuid[]) from public, anon;
+grant execute on function assign_applications(uuid[], text, uuid[]) to authenticated;
+
+-- 6) عند حذف عضو من الفريق تُزال مسؤولياته تلقائياً
+create or replace function clean_staff_assignments() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  update applications set assignees = array_remove(assignees, old.id) where assignees @> array[old.id];
+  return old;
+end $$;
+drop trigger if exists trg_clean_staff on staff;
+create trigger trg_clean_staff after delete on staff
+  for each row execute function clean_staff_assignments();
+
 
 -- 9) إضافة الفريق دفعة واحدة
 -- أنشئ حسابات الأعضاء أولاً من Authentication > Users (مع Auto Confirm User)،

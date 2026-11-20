@@ -12,7 +12,7 @@ const COLUMNS = [
   { k: "target_gov", l: "المحافظة", def: true },
   { k: "committee", l: "اللجنة", def: true },
   { k: "phone", l: "الهاتف", def: true },
-  { k: "assigned", l: "HR المسؤول", def: true, get: (r) => (r.assigned_to ? assignedName(r) : "—") },
+  { k: "assigned", l: "HR المسؤول", def: true, get: (r) => assigneeNames(r).join("، ") || "—" },
   {
     k: "status",
     l: "الحالة",

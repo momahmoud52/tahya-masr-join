@@ -212,6 +212,29 @@
     grid-column: 1/-1;
     text-align: center;
   }
-  #inviteModal{padding:0}
-  #inviteModal .box{min-height:100%;padding:16px;border-radius:0}
+  #inviteModal {
+    padding: 0;
+  }
+  #inviteModal .box {
+    min-height: 100%;
+    padding: 16px;
+    border-radius: 0;
+  }
+  #assignModal {
+    padding: 0;
+  }
+  #assignModal .box {
+    min-height: 100%;
+    padding: 16px;
+    border-radius: 0;
+  }
+  .br.wide {
+    grid-template-columns: 120px 1fr 40px;
+  }
+  .cm {
+    grid-template-columns: 96px 1fr 30px 56px;
+  }
+  .hw {
+    grid-template-columns: 80px 1fr 44px 40px 40px;
+  }
 }

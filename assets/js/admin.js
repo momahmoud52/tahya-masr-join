@@ -3,10 +3,7 @@ let me = null,
   staff = [],
   rows = [],
   sel = new Set();
-const show = (a) => {
-  $("#admin").style.display = a ? "block" : "none";
-  document.body.style.overflow = a ? "hidden" : "";
-};
+const show = (a) => (a ? openLayer("admin") : closeLayer("admin"));
 const openStaff = async () => {
   show(true);
   const { data } = await sb.auth.getSession();
@@ -47,13 +44,6 @@ async function init() {
   $("#who").textContent = `${me.name} (${me.role === "admin" ? "أدمن" : "HR"})`;
   $("#adminBar").hidden = $("#formBar").hidden = me.role !== "admin";
   buildFilterPanel();
-  $("#asg").innerHTML = opts(
-    staff.map((x) => x.name),
-    "اختر عضو HR",
-  ).replace(
-    /<option>(.*?)<\/option>/g,
-    (m, n) => `<option value="${staff.find((x) => x.name === n)?.id}">${n}</option>`,
-  );
   await load();
   await loadFormStatus();
   startRealtime();
@@ -105,17 +95,6 @@ $("#tb").onclick = (e) => {
   }
   if (t.classList.contains("nm")) profile(t.dataset.id);
 };
-$("#asgBtn").onclick = async () => {
-  const to = $("#asg").value;
-  if (!to || !sel.size) return alert("اختر عضو HR وحدد المتقدمين أولاً");
-  for (const part of chunk([...sel], 100)) {
-    const { error } = await sb.from("applications").update({ assigned_to: to }).in("id", part);
-    if (error) return alert(error.message);
-  }
-  sel.clear();
-  await load();
-  alert("تم التوزيع");
-};
 $("#exp").onclick = async () => {
   try {
     await loadLib("xlsx");
@@ -127,6 +106,7 @@ $("#exp").onclick = async () => {
     for (const k in COLS) o[COLS[k]] = r[k];
     o["الحالة"] = { a: "مقبول", r: "مرفوض", p: "قيد المراجعة" }[stOf(r)];
     o["السبب"] = r.decision_reason;
+    o["HR المسؤول"] = assigneeNames(r).join("، ");
     o["درجة التقييم"] = r.scores ? Object.values(r.scores).reduce((a, b) => a + +b, 0) : "";
     return o;
   });

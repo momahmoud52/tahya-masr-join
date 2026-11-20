@@ -60,7 +60,7 @@ async function syncIds(ids) {
   }
   if (fresh.length) rows = [...fresh, ...rows].sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
   if (gone.has(openProfile) && $("#modal").style.display === "flex") {
-    $("#modal").style.display = "none";
+    closeLayer("profile");
     toast("نُقل الطلب الذي كنت تفتحه إلى مسؤول آخر أو حُذف");
   }
   if (fresh.length)

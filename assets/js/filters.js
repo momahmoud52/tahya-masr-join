@@ -1,7 +1,8 @@
 /* الفلاتر المتقدمة: اختيار متعدد، بحث نصي، نطاق أرقام وتواريخ، مع شرائح للفلاتر النشطة */
 const STATUS_LABEL = { p: "قيد المراجعة", a: "مقبول", r: "مرفوض" };
 const scoreOf = (r) => (r.scores ? Object.values(r.scores).reduce((a, b) => a + +b, 0) : null);
-const assignedName = (r) => staff.find((x) => x.id === r.assigned_to)?.name || "غير موزع";
+const assigneeNames = (r) =>
+  (r.assignees || []).map((id) => staff.find((x) => x.id === id)?.name).filter(Boolean);
 
 const FILTER_FIELDS = [
   { k: "target_gov", l: "محافظة الانضمام", t: "multi", opts: () => GOVS },
@@ -21,7 +22,7 @@ const FILTER_FIELDS = [
     l: "HR المسؤول",
     t: "multi",
     opts: () => ["غير موزع", ...staff.map((s) => s.name)],
-    get: assignedName,
+    get: (r) => (assigneeNames(r).length ? assigneeNames(r) : ["غير موزع"]),
   },
   {
     k: "evaluated",
@@ -70,7 +71,7 @@ function applyFilters(list) {
     for (const f of active) {
       const v = valueOf(f, r);
       if (f.t === "multi") {
-        if (!F.multi[f.k].has(v)) return false;
+        if (![].concat(v).some((x) => F.multi[f.k].has(x))) return false;
       } else if (f.t === "text") {
         if (!String(v || "").includes(F.text[f.k].trim())) return false;
       } else {
