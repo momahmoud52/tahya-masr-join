@@ -29,8 +29,9 @@ $("#logout").onclick = async () => {
 };
 async function init() {
   const {
-    data: { user },
-  } = await sb.auth.getUser();
+    data: { session },
+  } = await sb.auth.getSession(); // محلي بلا طلب شبكة (طلب getUser محدود بـ 30 كل 5 دقائق لكل شبكة)
+  const user = session?.user;
   const s = await sb.from("staff").select("*");
   staff = s.data || [];
   me = staff.find((x) => x.id === user?.id);

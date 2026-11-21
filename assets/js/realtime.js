@@ -6,6 +6,7 @@ let rtChannel = null,
 const rtPending = new Set();
 
 function startRealtime() {
+  startSafetyResync();
   if (rtChannel) return;
   rtChannel = sb
     .channel("app-events")
@@ -16,11 +17,12 @@ function startRealtime() {
     })
     .subscribe((status) => {
       if (status !== "SUBSCRIBED") return;
-      if (rtReady) load(true); // عاد الاتصال بعد انقطاع: نعيد المزامنة
+      if (rtReady) resync(); // عاد الاتصال بعد انقطاع: نعيد المزامنة
       rtReady = true;
     });
 }
 function stopRealtime() {
+  stopSafetyResync();
   if (rtChannel) sb.removeChannel(rtChannel);
   rtChannel = null;
   rtReady = false;
@@ -29,7 +31,7 @@ function stopRealtime() {
 async function flushRealtime() {
   const ids = [...rtPending];
   rtPending.clear();
-  if (ids.length > 300) return load(true); // دفعة كبيرة (استيراد/توزيع جماعي): إعادة تحميل أسرع
+  if (ids.length > 300) return resync(); // دفعة كبيرة (استيراد/توزيع جماعي): إعادة تحميل أسرع
   await syncIds(ids);
 }
 
@@ -38,7 +40,7 @@ async function syncIds(ids) {
   const found = new Map();
   for (const part of chunk(ids, 100)) {
     const { data, error } = await sb.from("applications").select("*").in("id", part);
-    if (error) return load(true);
+    if (error) return resync();
     data.forEach((r) => found.set(r.id, r));
   }
   const pos = new Map(rows.map((r, i) => [r.id, i])),
@@ -72,7 +74,22 @@ async function syncIds(ids) {
   if (gone.size || fresh.length || found.size) draw();
 }
 
-/* عند عودة المستخدم للتبويب (مثلاً بعد قفل الهاتف) نتأكد أن القائمة محدّثة */
+/* إعادة تحميل كاملة بصمت، بتأخير عشوائي حتى لا يطلبها كل الأعضاء في اللحظة نفسها */
+let lastResync = Date.now(),
+  hiddenAt = 0,
+  rtSafety = null;
+function resync() {
+  lastResync = Date.now();
+  return new Promise((r) => setTimeout(() => load(true).then(r), Math.random() * 4000));
+}
+/* عند عودة المستخدم للتبويب بعد غياب أكثر من دقيقة، وبما لا يزيد عن مرة كل دقيقتين */
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible" && rtChannel) load(true);
+  if (document.visibilityState === "hidden") hiddenAt = Date.now();
+  else if (rtChannel && Date.now() - hiddenAt > 60000 && Date.now() - lastResync > 120000) resync();
 });
+/* شبكة أمان: مزامنة كل 10 دقائق تعوّض أي حدث لحظي فات (مثل ضغط شديد على الخدمة) */
+const startSafetyResync = () => (rtSafety ||= setInterval(() => rtChannel && resync(), 10 * 60 * 1000));
+const stopSafetyResync = () => {
+  clearInterval(rtSafety);
+  rtSafety = null;
+};
