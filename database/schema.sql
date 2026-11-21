@@ -200,6 +200,15 @@ do $$ begin
 end $$;
 
 -- تحويل متقدم إلى لجنة/محافظة أخرى مع تحديد HR المسؤول (للأدمن، ولعضو HR على طلباته فقط)
+-- نحذف كل نسخ هاتين الدالتين (حتى لو اختلفت وسائطها) قبل إعادة إنشائهما نظيفتين
+do $$ declare r record; begin
+  for r in select p.oid::regprocedure as sig
+           from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+           where n.nspname = 'public' and p.proname in ('transfer_application', 'assign_applications') loop
+    execute 'drop function ' || r.sig;
+  end loop;
+end $$;
+
 create or replace function transfer_application(
   p_id uuid, p_committee text default null, p_gov text default null,
   p_assignee uuid default null, p_log jsonb default null
@@ -281,3 +290,15 @@ on conflict (id) do update set name = excluded.name, role = excluded.role;
 select s.name, s.role, u.email
 from staff s join auth.users u on u.id = s.id
 order by s.role, s.name;
+
+-- تحديث ذاكرة واجهة Supabase (PostgREST) بالدوال الجديدة
+notify pgrst, 'reload schema';
+
+-- فحص نهائي: يجب أن تكون النتيجة صفر صفوف، أي لا دالة ولا سياسة تشير إلى العمود القديم
+select 'function' as kind, p.proname::text as name
+from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public' and p.prosrc ilike '%assigned_to%'
+union all
+select 'policy', policyname::text from pg_policies
+where schemaname in ('public', 'storage')
+  and (coalesce(qual, '') ilike '%assigned_to%' or coalesce(with_check, '') ilike '%assigned_to%');
