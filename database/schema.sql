@@ -47,6 +47,19 @@ alter table applications drop constraint if exists female_only_initiative;
 alter table applications add constraint female_only_initiative
   check (committee <> 'المبادرة الوطنية رائدات مصر' or gender = 'أنثى') not valid;
 
+-- ترقية قواعد البيانات الأقدم: كل سطر هنا آمن للتكرار، وبه يصلح هذا الملف أي حالة سابقة
+alter table applications add column if not exists transfer_log jsonb not null default '[]'::jsonb;
+alter table applications add column if not exists invited_at timestamptz;
+alter table applications add column if not exists invited_by text;
+alter table applications add column if not exists assignees uuid[] not null default '{}';
+do $$ begin
+  if exists (select 1 from information_schema.columns
+             where table_schema = 'public' and table_name = 'applications' and column_name = 'assigned_to') then
+    update applications set assignees = array[assigned_to]
+    where assigned_to is not null and assignees = '{}';
+  end if;
+end $$;
+
 create index if not exists applications_assignees_gin on applications using gin (assignees);
 
 -- 2) دالة التحقق من الأدمن
@@ -246,6 +259,9 @@ drop trigger if exists trg_clean_staff on staff;
 create trigger trg_clean_staff after delete on staff
   for each row execute function clean_staff_assignments();
 
+
+-- حذف العمود القديم بعد إعادة إنشاء كل السياسات والدوال التي كانت تعتمد عليه
+alter table applications drop column if exists assigned_to;
 
 -- 9) إضافة الفريق دفعة واحدة
 -- أنشئ حسابات الأعضاء أولاً من Authentication > Users (مع Auto Confirm User)،
